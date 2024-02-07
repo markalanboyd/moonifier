@@ -19,3 +19,5 @@
 
 # Go workspace file
 go.work
+minified.lua
+test.lua
