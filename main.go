@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/markalanboyd/moonifier/tokens"
 )
 
 func main() {
+	fmt.Println("Opening test.lua...")
+
 	file, err := os.Open("test.lua")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
@@ -19,11 +23,15 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	var builder strings.Builder
+	tokenSet := tokens.GetTokenSet()
 	for scanner.Scan() {
+		var skip bool
 		line := scanner.Text()
-		if strings.HasPrefix(line, "--") {
+		line, skip = processLine(line)
+		if skip {
 			continue
 		}
+		line = tokenProcessor(line, &tokenSet)
 		builder.WriteString(line + " ")
 	}
 
@@ -31,7 +39,7 @@ func main() {
 		fmt.Println("Error reading file:", err)
 	}
 
-	result := builder.String()
+	minifiedString := builder.String()
 
 	fmt.Println("Writing to minified.lua...")
 
@@ -44,7 +52,7 @@ func main() {
 
 	writer := bufio.NewWriter(outFile)
 
-	writer.WriteString(result)
+	writer.WriteString(minifiedString)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
